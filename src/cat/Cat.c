@@ -4,7 +4,6 @@
 #include <unistd.h>
 
 int main(int argc, char **argv) {
-  //функция, способная принимать аргументы командной строки
   // struct option opts[] = {
   //     {"brackets", no_argument, &is_brackets, 1}, {0, 0, 0, 0},
   //     //{0, 0, 0, 0} стандартный способ указания конца массива структур
@@ -15,7 +14,7 @@ int main(int argc, char **argv) {
   FILE *fp;
   const int buffersize = 4096;
   char buffer[buffersize];
-  int currentfile = (argc > 1 ? 1 : 0);
+  int currentfile;
 
     while ((opt = getopt(argc, argv, "bens")) !=-1){
     switch(opt){
@@ -33,24 +32,35 @@ int main(int argc, char **argv) {
       break;
     }
   }
-
-  while (currentfile < argc) {
-    if (argc > 1) {
-      fp = fopen(argv[currentfile], "rb"); //открытие для записи и чтения
+//пока не пройдем все файлы
+  currentfile = optind;
+  while (currentfile <= argc) {
+    if (currentfile!=argc) {
+      fp = fopen(argv[currentfile], "rb");
       if (fp == NULL) {
         printf("No such file or directory");
         flag = 1;
       }
     }
+    int lastMt=0;
+    //считываем строки
     while (fgets(buffer, buffersize, (fp == NULL ? stdin : fp))) {
       int length = strlen(buffer);
-      //последний аргумент fgets указатель на объект типа FILE
-      // strlen длина строки не включая завершающий нулевой символ
+    // перезаписали перенос каректки на \0
       buffer[length - 1] = '\0';
-      // перезаписали перенос каректки на \0
+
       // if (sflag){
-      // length= strlen
+      //   length=strlen(buffer);
+      //   int currMt=0;
+      //   //<=1 тк \n
+      //   if (length<=1)
+      //   currMt=1;
+      //   else
+      //   currMt=0;
+      //   if (currMt != lastMt)
+      //   lastMt=currMt;
       // }
+
       fprintf(stdout, "%s\n", buffer);
     }
     fclose(fp);
@@ -64,3 +74,9 @@ int main(int argc, char **argv) {
   // }
   return flag;
 }
+
+
+
+
+
+ 
