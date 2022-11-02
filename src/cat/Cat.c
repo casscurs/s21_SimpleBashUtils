@@ -34,7 +34,8 @@ int main(int argc, char **argv) {
   }
 //пока не пройдем все файлы
   currentfile = optind;
-  while (currentfile <= argc) {
+  ///
+  while (currentfile < argc) {
     if (currentfile!=argc) {
       fp = fopen(argv[currentfile], "rb");
       if (fp == NULL) {
@@ -43,23 +44,31 @@ int main(int argc, char **argv) {
       }
     }
     int lastMt=0;
+    int lastLineBlank=0;
     //считываем строки
     while (fgets(buffer, buffersize, (fp == NULL ? stdin : fp))) {
       int length = strlen(buffer);
     // перезаписали перенос каректки на \0
       buffer[length - 1] = '\0';
 
-      // if (sflag){
-      //   length=strlen(buffer);
-      //   int currMt=0;
-      //   //<=1 тк \n
-      //   if (length<=1)
-      //   currMt=1;
-      //   else
-      //   currMt=0;
-      //   if (currMt != lastMt)
-      //   lastMt=currMt;
-      // }
+      if (sflag){
+         length=strlen(buffer);
+         int currMt=0;
+         //<=1 тк \n
+         if (length<=1)
+         currMt=1;
+         else
+         currMt=0;
+        if (currMt != lastMt){
+          lastMt=currMt;
+        }
+                //         length = strlen(buffer);
+                // int currentLineBlank = (length <= 1) ? 1 : 0;
+                // if (lastLineBlank && currentLineBlank) {
+                //     continue;
+                // }
+                // lastLineBlank = currentLineBlank;
+      }
 
       fprintf(stdout, "%s\n", buffer);
     }
