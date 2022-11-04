@@ -16,7 +16,7 @@ typedef struct options {
 int main(int argc, char **argv) {
   opt options = {0, 0, 0, 0, 0, 0};
   int length;
-  int flag = 0;
+  int flag = 0,flagin=0;
   int opt;
   FILE *fp = NULL;
   int b_read;
@@ -60,18 +60,25 @@ int main(int argc, char **argv) {
   }
   int currfile = optind;
   str = (char *)malloc(size);
+
+  if(argc<=1){
+    flagin=1;
+  }
+
   while (currfile <= argc) {
     if (currfile != argc) {
-      fp = fopen(argv[currfile], "rb");
+        fp = fopen(argv[currfile], "rb");
       if (fp == NULL) {
-        printf("%s-No such file or directory", argv[currfile]);
+        printf("%s: No such file or directory", argv[currfile]);
         flag = 1;
+        currfile++;
+        continue;
       }
     }
     int lastempt = 0;
     int i = 1;
     int m=1;
-    while ((getline(&str, &size, (fp == NULL ? stdin : fp))) != -1) {
+    while ((getline(&str, &size, (flagin ? stdin : fp))) != -1) {
       length = strlen(str);
       str[length - 1] = '\0';
             if (options.eflag) {
@@ -98,20 +105,23 @@ int main(int argc, char **argv) {
       } else if (options.nflag) {
         printf("%*d\t", 6, i);
       }
-      // if (options.tflag) {
+      if (options.tflag) {
+        length = strlen(str);
+        for (int k = 0; k <= length; k++) {
+          if (str[k] != '\0') {
+            if (str[k] == '\t') {
+              printf("^I");
+            } else
+              putchar(str[k]);
+          } else {
+            putchar('\n');
+          }
+        }
+      } else
+      // if (options.vflag){
       //   length = strlen(str);
-      //   for (int k = 0; k <= length; k++) {
-      //     if (str[k] != '\0') {
-      //       if (str[k] == '\t') {
-      //         printf("^I");
-      //       } else
-      //         putchar(str[k]);
-      //     } else {
-      //       putchar('\n');
-      //     }
-      //   }
-      // } else
-      if (options.)
+      //   for(int k=0;k<=length;k++){
+      // }
         fprintf(stdout, "%s\n", str);
 
       i++;
