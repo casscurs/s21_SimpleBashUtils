@@ -3,9 +3,14 @@
 int main(int argc, char **argv) {
   int flag = 0;
   opt options = {0};
-  flag_turn(argc, argv, &options);
-  int currfile = optind;
-  mainwork(argc, argv, &currfile, options);
+  if (argc > 1) {
+    flag_turn(argc, argv, &options);
+    int currfile = optind;
+    mainwork(argc, argv, &currfile, options);
+  } else {
+    printf("no arguments");
+    flag = 1;
+  }
   return flag;
 }
 void mainwork(int argc, char **argv, int *currfile, opt options) {
