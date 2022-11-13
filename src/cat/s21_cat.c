@@ -15,7 +15,7 @@ void mainwork(int argc, char **argv, int *currfile, opt options) {
   int prev = '\n';
   int i = 1;
   int empt = 0;
-  while (*currfile <= argc) {
+  while (*currfile < argc) {
     if (*currfile != argc) {
       fp = fopen(argv[*currfile], "r");
       if (fp == NULL) {
