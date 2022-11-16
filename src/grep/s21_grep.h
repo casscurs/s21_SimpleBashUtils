@@ -33,5 +33,7 @@ struct option opts[] = {
 };
 
 //void ifflag(int *cur, int *prev, int *i, int *empt, opt options);
+void argc_check(int argc,int* flag);
 void flag_turn(int argc, char **argv, opt *options);
+void file_check(char **argv, int *Nullflag, FILE **fp, int *currfile);
 //void mainwork(int argc, char **argv, int *currfile, opt options);
