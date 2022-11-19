@@ -143,8 +143,10 @@ void if_E_or_F(opt options, char *strPattern, char *strSearch) {
   }
 }
 void Ecase(char *strPattern, char *str) {
+  if (strlen(str)>0){
   strcat(strPattern, str);
   strcat(strPattern, "|");
+  }
 }
 void argc_check(int argc, int *flag) {
   if (argc < 3) {
@@ -173,7 +175,7 @@ void Fcase(int *flag, char *strPattern) {
     file_check(optarg, flag, &fpattern);
     while (((getCheck = getline(&strFile, &sizeStr, fpattern)) != -1) &&
            !(*flag)) {
-      int length = strlen(strFile);
+            int length = strlen(strFile);
       if (strFile[length - 1] == '\n') {
         strFile[length - 1] = '\0';
       }
