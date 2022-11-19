@@ -4,125 +4,68 @@
 // cppcheck
 
 int main(int argc, char **argv) {
-  int Nullflag = 0;
   int flag = 0;
   opt options = {0};
   size_t sizeStr = 1024;
   char strSearch[sizeSearch] = {0};
   char strPattern[sizeSearch] = {0};
-  char *strStr;
-  int redStr;
+  char *strStr = NULL;
+  int redStr = 0;
   strStr = (char *)malloc(sizeStr * sizeof *strStr);
-  if (strStr == NULL) {
-    printf("memory error");
-    flag = 1;
-  }
-  argc_check(argc, &flag);
-  flag_turn(argc, argv, &options, strPattern,&Nullflag);
 
+  malloc_check(&strStr, &flag);
+  argc_check(argc, &flag);
+  flag_turn(argc, argv, &options, strPattern, &flag);
+  if (!flag){
+  last_sym_rewrite(strPattern);
   int find = optind;
   FILE *fp = NULL;
-  int green;
-  //regex_t regex;
+  int green = 0;
+  regex_t regex;
   int registflag = REG_EXTENDED;
-  int opposflag = REG_NOMATCH;
-  int countStr = 0;
-  int fnameflag = 0;
-  int success = 0;
+
+  // int opposflag = REG_NOMATCH;
+  // int countStr = 0;
+  // int fnameflag = 0;
+  // int success = 0;
+
+  decrement_optind(&find, options);
+  // printf("\n%s\n", strPattern);
+
   while (find < argc) {
+    int Nullflag = 0;
     strcpy(strSearch, argv[find]);
-    //printf("%s", strPattern);
-    file_check(argv, &Nullflag, &fp, ++find);
+    file_check(argv[++find], &Nullflag, &fp);
+    if_E_or_F(options, strPattern, strSearch);
     while (!Nullflag && ((redStr = getline(&strStr, &sizeStr, fp)) != -1) &&
            !options.lflag) {
-      if (options.eflag || options.fflag) {
-        strcpy(strSearch, strPattern);
+      regcomp(&regex, strSearch, registflag);
+
+      green = regexec(&regex, strStr, 0, NULL, registflag);
+
+      if ((green == 0)) {
+        printf("%s", strStr);
       }
-      //regcomp(&regex, strStr, registflag);
+      
     }
-    success = 0;
     fclose(fp);
-    Nullflag = 0;
     find++;
   }
-  free(strStr);
-  //regfree(&regex);
+  regfree(&regex);
+  }
+  if (strStr != NULL) {
+    free(strStr);
+  }
   return flag;
 }
 
-void argc_check(int argc, int *flag) {
-  if (argc < 3) {
-    printf("too few arguments");
-    *flag = 1;
-  }
-}
-void file_check(char **argv, int *Nullflag, FILE **fp, int currfile) {
-  *fp = fopen(argv[(currfile)], "r");
-  if ((*fp) == NULL) {
-    printf("grep: %s: No such file\n", argv[(currfile)]);
-    *Nullflag = 1;
-  } else {
-    *Nullflag = 0;
-  }
-}
-void flag_turn(int argc, char **argv, opt *options, char *strPattern,int* Nullflag) {
+void flag_turn(int argc, char **argv, opt *options, char *strPattern,
+               int *flag) {
   int opchar = 0;
   int opindex = 0;
   while (-1 !=
          (opchar = getopt_long(argc, argv, "+e:ivclnhsf:o", opts, &opindex))) {
-    switch (opchar) {
-    case 'e':
-      options->eflag = 1;
-     // printf("\n%s\n", optarg);
-      strcat(strPattern,optarg);
-      strcat(strPattern,"|");
-      break;
-    case 'i':
-      options->iflag = 1;
-      break;
-    case 'v':
-      options->vflag = 1;
-      break;
-    case 'c':
-      options->cflag = 1;
-      break;
-    case 'l':
-      options->lflag = 1;
-      break;
-    case 'n':
-      options->nflag = 1;
-      break;
-    case 'h':
-      options->hflag = 1;
-      break;
-    case 's':
-      options->sflag = 1;
-      break;
-    case 'f':
-  //     options->fflag = 1;
-  //           FILE *fpatt=NULL;
-  //     fpatt = fopen(optarg, "r");
-  // if ((fpatt) == NULL) {
-  //   printf("grep: %s: No such file\n", optarg);
-  //   *Nullflag = 1;
-  // } else {
-  //     char *token, *last;
-  // token = strtok_r(strPattern, "|", &last);//вернет указатель на найденный токен
-  // int f_patt = 0;
-  // (void)f_patt;
-  // while (token != NULL) {
-  //   token = strtok_r(NULL, "|", &last);
-  // }
-  //   *Nullflag = 0;
-  // }
-  // printf("\n%s\n", strPattern);
-      break;
-    case 'o':
-      options->oflag = 1;
-      break;
-    default:
-      printf("usage: grep [-benstuv] [file ...]\n");
-    }
+switchcase(&opchar,strPattern,options,flag);
   }
 }
 //  countStr++;
@@ -177,3 +120,106 @@ void flag_turn(int argc, char **argv, opt *options, char *strPattern,int* Nullfl
 //   }
 //   printf("%d\n", success);
 // }
+void malloc_check(char **strStr, int *flag) {
+  if (*strStr == NULL) {
+    printf("memory error");
+    *flag = 1;
+  }
+}
+void last_sym_rewrite(char *strPattern) {
+  if ((strPattern) != NULL) {
+    int length = strlen(strPattern);
+    strPattern[length - 1] = '\0';
+  }
+}
+void decrement_optind(int *find, opt options) {
+  if (options.eflag || options.fflag) {
+    (*find)--;
+  }
+}
+void if_E_or_F(opt options, char *strPattern, char *strSearch) {
+  if (options.eflag || options.fflag) {
+    strcpy(strSearch, strPattern);
+  }
+}
+void Ecase(char *strPattern, char *str) {
+  strcat(strPattern, str);
+  strcat(strPattern, "|");
+}
+void argc_check(int argc, int *flag) {
+  if (argc < 3) {
+    printf("too few arguments");
+    *flag = 1;
+  }
+}
+void file_check(char *str, int *Nullflag, FILE **fp) {
+  *fp = fopen(str, "r");
+  if ((*fp) == NULL) {
+    printf("grep: %s: No such file\n", str);
+    *Nullflag = 1;
+  } else {
+    *Nullflag = 0;
+  }
+}
+void Fcase(int *flag, char *strPattern) {
+  FILE *fpattern = NULL;
+  char *strFile = NULL;
+  size_t sizeStr = 1024;
+  int getCheck = 0;
+  strFile = (char *)malloc(sizeStr * sizeof *strFile);
+  malloc_check(&strFile, flag);
+  if (!(*flag)) {
+    fpattern = fopen(optarg, "r");
+    file_check(optarg, flag, &fpattern);
+    while (((getCheck = getline(&strFile, &sizeStr, fpattern)) != -1) &&
+           !(*flag)) {
+      int length = strlen(strFile);
+      if (strFile[length - 1] == '\n') {
+        strFile[length - 1] = '\0';
+      }
+      Ecase(strPattern, strFile);
+    }
+    fclose(fpattern);
+  }
+  if (strFile != NULL) {
+    free(strFile);
+  }
+}
+void switchcase(int *opchar,char *strPattern,opt *options,int *flag){
+      switch (*opchar) {
+    case 'e':
+      options->eflag = 1;
+      Ecase(strPattern, optarg);
+      break;
+    case 'i':
+      options->iflag = 1;
+      break;
+    case 'v':
+      options->vflag = 1;
+      break;
+    case 'c':
+      options->cflag = 1;
+      break;
+    case 'l':
+      options->lflag = 1;
+      break;
+    case 'n':
+      options->nflag = 1;
+      break;
+    case 'h':
+      options->hflag = 1;
+      break;
+    case 's':
+      options->sflag = 1;
+      break;
+    case 'f':
+      options->fflag = 1;
+      Fcase(flag, strPattern);
+      break;
+    case 'o':
+      options->oflag = 1;
+      break;
+    default:
+      printf("usage: grep [-benstuv] [file ...]\n");
+    }
+}

@@ -1,3 +1,6 @@
+#ifndef S21_GREP_H
+#define S21_GREP_H
+
 #include <getopt.h>
 #include <regex.h>
 #include <stdio.h>
@@ -36,6 +39,15 @@ struct option opts[] = {
 
 //void ifflag(int *cur, int *prev, int *i, int *empt, opt options);
 void argc_check(int argc,int* flag);
-void flag_turn(int argc, char **argv, opt *options,char* strPattern, int* Nullflag);
-void file_check(char **argv, int *Nullflag, FILE **fp, int currfile);
+void flag_turn(int argc, char **argv, opt *options,char* strPattern, int* flag);
+void file_check(char *str, int *Nullflag, FILE **fp);
+void malloc_check(char **strStr,int* flag);
+void last_sym_rewrite(char* strPattern);
+void decrement_optind(int* find,opt options);
+void if_E_or_F(opt options,char* strPattern,char* strSearch);
+void Ecase(char* strPattern,char* str);
+void Fcase(int* flag,char* strPattern);
+void switchcase(int *opchar,char *strPattern,opt *options,int *flag);
 //void mainwork(int argc, char **argv, int *currfile, opt options);
+
+#endif
