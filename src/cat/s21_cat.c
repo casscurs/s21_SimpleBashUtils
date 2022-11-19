@@ -14,24 +14,21 @@ int main(int argc, char **argv) {
   return flag;
 }
 void mainwork(int argc, char **argv, int *currfile, opt options) {
-  int Nullflag;
   FILE *fp = NULL;
-  int cur;
+  int cur = 0;
   int prev = '\n';
-  int i = 1;
   int empt = 0;
   while (*currfile < argc) {
     fp = fopen(argv[*currfile], "r");
+    int i = 1;
     if (fp == NULL) {
       printf("\ncat: %s: No such file\n", argv[*currfile]);
-      Nullflag = 1;
       (*currfile)++;
       continue;
     } else {
-      Nullflag = 0;
-    }
-    while (!Nullflag && ((cur = fgetc(fp)) != EOF)) {
-      ifflag(&cur, &prev, &i, &empt, options);
+      while ((cur = fgetc(fp)) != EOF) {
+        ifflag(&cur, &prev, &i, &empt, options);
+      }
     }
     fclose(fp);
     (*currfile)++;
