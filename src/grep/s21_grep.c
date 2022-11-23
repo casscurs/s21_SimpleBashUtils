@@ -22,7 +22,8 @@ int main(int argc, char **argv) {
   FILE *fp = NULL;
   int green = 0;
   regex_t regex;
-  int registflag = REG_EXTENDED;
+ //int registflag = REG_EXTENDED;
+  int registflag = REG_NEWLINE | REG_EXTENDED;
 
   // int opposflag = REG_NOMATCH;
   // int countStr = 0;
@@ -37,11 +38,13 @@ int main(int argc, char **argv) {
     strcpy(strSearch, argv[find]);
     file_check(argv[++find], &Nullflag, &fp);
     if_E_or_F(options, strPattern, strSearch);
+    //printf("\n%s\n",strSearch);
+    //printf(": |\\{|\\}");
     while (!Nullflag && ((redStr = getline(&strStr, &sizeStr, fp)) != -1) &&
            !options.lflag) {
-      regcomp(&regex, strSearch, registflag);
+      regcomp(&regex,strSearch, registflag);
 
-      green = regexec(&regex, strStr, 0, NULL, registflag);
+      green = regexec(&regex, strStr, 0, NULL, 0);
 
       if ((green == 0)) {
         printf("%s", strStr);
@@ -143,10 +146,18 @@ void if_E_or_F(opt options, char *strPattern, char *strSearch) {
   }
 }
 void Ecase(char *strPattern, char *str) {
+  int length =strlen(str);
   if (strlen(str)>0){
+    if((length==1)&&(str[length-1] = '*')){
+      strcpy(str," *");
+    }
   strcat(strPattern, str);
   strcat(strPattern, "|");
+    
+  //printf("%ld",strlen(str));
+  //printf("%s",str);
   }
+  
 }
 void argc_check(int argc, int *flag) {
   if (argc < 3) {
@@ -176,9 +187,12 @@ void Fcase(int *flag, char *strPattern) {
     while (((getCheck = getline(&strFile, &sizeStr, fpattern)) != -1) &&
            !(*flag)) {
             int length = strlen(strFile);
+        if ((strlen(strFile)==1)&&(strFile[length - 1] == '\n')) {
+        strFile[length-1] = '*';
+      } else{
       if (strFile[length - 1] == '\n') {
         strFile[length - 1] = '\0';
-      }
+      }}
       Ecase(strPattern, strFile);
     }
     fclose(fpattern);
