@@ -24,6 +24,7 @@ int main(int argc, char **argv) {
   last_sym_rewrite(options.strPattern);
   int find = optind;
   regex_t regex;
+
   int registflag = REG_NEWLINE | REG_EXTENDED;
   // int opposflag = REG_NOMATCH;
   // int countStr = 0;
@@ -45,8 +46,12 @@ int main(int argc, char **argv) {
            !options.lflag) {
       regcomp(&regex, options.strSearch, registflag);
       options.regFound = regexec(&regex, options.strStr, 0, NULL, 0);
-      if ((options.regFound == 0)) {
-        printf("%s", options.strStr);
+      if (options.oflag) {
+
+      } else {
+        if ((options.regFound == 0)) {
+          printf("%s", options.strStr);
+        }
       }
     }
     if (fp != NULL) {
@@ -67,6 +72,7 @@ void pars_and_prework(opt *options) {
     switchcase(&opchar, options);
   }
 }
+
 void malloc_check(char *str, opt *options) {
   if (str == NULL) {
     perror("memory error");
@@ -74,23 +80,27 @@ void malloc_check(char *str, opt *options) {
     exit(1);
   }
 }
+
 void last_sym_rewrite(char *strPattern) {
   if ((strPattern) != NULL) {
     int length = strlen(strPattern);
     strPattern[length - 1] = '\0';
   }
 }
+
 void decrement_for_EF(int *find, opt options) {
   if (options.eflag || options.fflag) {
     (*find) = (*find) - 1;
     options.argc--;
   }
 }
+
 void if_E_or_F(opt options, char *strPattern, char *strSearch) {
   if (options.eflag || options.fflag) {
     strcpy(strSearch, strPattern);
   }
 }
+
 void Ecase(char *strPattern, char *str) {
   int length = strlen(str);
   // printf("strSearch:%s\n",str);
@@ -102,6 +112,7 @@ void Ecase(char *strPattern, char *str) {
     strcat(strPattern, "|");
   }
 }
+
 void argc_check(opt *options) {
   if (options->argc < 3) {
     printf("too few arguments");
@@ -109,6 +120,7 @@ void argc_check(opt *options) {
     exit(1);
   }
 }
+
 void file_check(char *str, int *Nullflag, FILE **fp) {
   *fp = fopen(str, "r");
   if ((*fp) == NULL) {
@@ -118,6 +130,7 @@ void file_check(char *str, int *Nullflag, FILE **fp) {
     *Nullflag = 0;
   }
 }
+
 void file_check_exit(char *str, int *Nullflag, FILE **fp, opt *options) {
   *fp = fopen(str, "r");
   if ((*fp) == NULL) {
@@ -129,12 +142,14 @@ void file_check_exit(char *str, int *Nullflag, FILE **fp, opt *options) {
     *Nullflag = 0;
   }
 }
+
 void Fcase(opt *options) {
   FILE *fpattern = NULL;
   size_t sizeStr = 1024;
   options->strFile = (char *)malloc(sizeStr * sizeof options->strFile);
   int getCheck = 0;
   int Nullflag = 0;
+  int starflag = 0;
   malloc_check(options->strFile, options);
   file_check_exit(optarg, &Nullflag, &fpattern, options);
   while (
@@ -142,19 +157,24 @@ void Fcase(opt *options) {
       (!Nullflag)) {
     int length = strlen(options->strFile);
     if ((strlen(options->strFile) == 1) &&
-        ((options->strFile)[length - 1] == '\n')) {
+        ((options->strFile)[length - 1] == '\n') && !starflag) {
       (options->strFile)[length - 1] = '*';
+      Ecase(options->strPattern, options->strFile);
+      starflag = 1;
     } else {
       if ((options->strFile)[length - 1] == '\n') {
         (options->strFile)[length - 1] = '\0';
+        Ecase(options->strPattern, options->strFile);
+      } else {
+        Ecase(options->strPattern, options->strFile);
       }
     }
-    Ecase(options->strPattern, options->strFile);
   }
   if (fpattern != NULL) {
     fclose(fpattern);
   }
 }
+
 void switchcase(int *opchar, opt *options) {
   switch (*opchar) {
   case 'e':
