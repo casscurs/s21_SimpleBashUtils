@@ -20,7 +20,7 @@ int main(int argc, char **argv) {
   options.strStr = (char *)malloc(sizeStr * sizeof options.strStr);
   malloc_check(options.strStr, &options);
   pars_and_prework(&options);
-   argc_check(&options);
+  argc_check(&options);
   last_sym_rewrite(options.strPattern);
   int find = optind;
   regex_t regex;
@@ -29,23 +29,26 @@ int main(int argc, char **argv) {
   // int countStr = 0;
   // int fnameflag = 0;
   // int success = 0;
-  decrement_optind(&find, options);
-  while (find < (argc-1)) {
+  decrement_for_EF(&find, options);
+  while (find < (argc)) {
     int Nullflag = 0;
-     FILE *fp = NULL;
-    strcpy(options.strSearch, argv[find]);
-    file_check(argv[1+find], &Nullflag, &fp); // sega
+    FILE *fp = NULL;
     if_E_or_F(options, options.strPattern, options.strSearch);
-      while (!Nullflag &&
-          ((options.gline = getline(&(options.strStr), &sizeStr, fp)) != -1) &&
-          !options.lflag) {
-        regcomp(&regex, options.strSearch, registflag);
-        options.regFound = regexec(&regex, options.strStr, 0, NULL, 0);
-        if ((options.regFound == 0)) {
-          printf("%s", options.strStr);
-        }
+    strcat(options.strSearch, argv[find]);
+    if ((find + 1) >= (argc)) {
+      Nullflag = 1;
+    } else {
+      file_check(argv[1 + find], &Nullflag, &fp);
+    }
+    while (!Nullflag &&
+           ((options.gline = getline(&(options.strStr), &sizeStr, fp)) != -1) &&
+           !options.lflag) {
+      regcomp(&regex, options.strSearch, registflag);
+      options.regFound = regexec(&regex, options.strStr, 0, NULL, 0);
+      if ((options.regFound == 0)) {
+        printf("%s", options.strStr);
       }
-    
+    }
     if (fp != NULL) {
       fclose(fp);
     }
@@ -77,9 +80,10 @@ void last_sym_rewrite(char *strPattern) {
     strPattern[length - 1] = '\0';
   }
 }
-void decrement_optind(int *find, opt options) {
+void decrement_for_EF(int *find, opt options) {
   if (options.eflag || options.fflag) {
-    (*find)--;
+    (*find) = (*find) - 1;
+    options.argc--;
   }
 }
 void if_E_or_F(opt options, char *strPattern, char *strSearch) {
@@ -89,8 +93,9 @@ void if_E_or_F(opt options, char *strPattern, char *strSearch) {
 }
 void Ecase(char *strPattern, char *str) {
   int length = strlen(str);
+  // printf("strSearch:%s\n",str);
   if (strlen(str) > 0) {
-    if ((length == 1) && (str[length - 1] = '*')) {
+    if ((length == 1) && (str[length - 1] == '*')) {
       strcpy(str, " *");
     }
     strcat(strPattern, str);
@@ -99,20 +104,27 @@ void Ecase(char *strPattern, char *str) {
 }
 void argc_check(opt *options) {
   if (options->argc < 3) {
-    free_at_exit(options);
-    exit(1);
-  }
-    if ((options->argc < 4)&&((options->fflag)||(options->eflag))) {
+    printf("too few arguments");
     free_at_exit(options);
     exit(1);
   }
 }
 void file_check(char *str, int *Nullflag, FILE **fp) {
- *fp = fopen(str, "r");
+  *fp = fopen(str, "r");
   if ((*fp) == NULL) {
     printf("grep: %s: No such file\n", str);
     *Nullflag = 1;
-    //exit(1);
+  } else {
+    *Nullflag = 0;
+  }
+}
+void file_check_exit(char *str, int *Nullflag, FILE **fp, opt *options) {
+  *fp = fopen(str, "r");
+  if ((*fp) == NULL) {
+    printf("grep: %s: No such file\n", str);
+    *Nullflag = 1;
+    free_at_exit(options);
+    exit(1);
   } else {
     *Nullflag = 0;
   }
@@ -124,7 +136,7 @@ void Fcase(opt *options) {
   int getCheck = 0;
   int Nullflag = 0;
   malloc_check(options->strFile, options);
-  file_check(optarg, &Nullflag, &fpattern);
+  file_check_exit(optarg, &Nullflag, &fpattern, options);
   while (
       ((getCheck = getline(&(options->strFile), &sizeStr, fpattern)) != -1) &&
       (!Nullflag)) {
