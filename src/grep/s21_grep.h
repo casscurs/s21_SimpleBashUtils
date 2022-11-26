@@ -26,6 +26,7 @@ typedef struct options {
   char *strFile;
 
   char strSearch[sizeSearch];
+  char strBuf[sizeSearch];
   char strPattern[sizeSearch];
   int argc;
   char **argv;

@@ -1,6 +1,14 @@
 #include "s21_grep.h"
+
 // valgrind
 // cppcheck
+void File_range(opt options, int *Nullflag, int find, FILE **fp) {
+  if ((find + 1) >= (options.argc)) {
+    *Nullflag = 1;
+  } else {
+    file_check((options.argv)[1 + find], Nullflag, fp);
+  }
+}
 void free_at_exit(opt *options) {
   if (options->strStr) {
     free(options->strStr);
@@ -11,6 +19,7 @@ void free_at_exit(opt *options) {
     options->strFile = NULL;
   }
 }
+
 int main(int argc, char **argv) {
   int flag = 0;
   opt options = {0};
@@ -22,35 +31,61 @@ int main(int argc, char **argv) {
   pars_and_prework(&options);
   argc_check(&options);
   last_sym_rewrite(options.strPattern);
+
   int find = optind;
   regex_t regex;
-
+  regmatch_t pmatch[1];
   int registflag = REG_NEWLINE | REG_EXTENDED;
-  // int opposflag = REG_NOMATCH;
-  // int countStr = 0;
-  // int fnameflag = 0;
-  // int success = 0;
+
   decrement_for_EF(&find, options);
   while (find < (argc)) {
     int Nullflag = 0;
     FILE *fp = NULL;
-    if_E_or_F(options, options.strPattern, options.strSearch);
     strcat(options.strSearch, argv[find]);
-    if ((find + 1) >= (argc)) {
-      Nullflag = 1;
-    } else {
-      file_check(argv[1 + find], &Nullflag, &fp);
-    }
+    if_E_or_F(options, options.strPattern, options.strSearch);
+    File_range(options, &Nullflag, find, &fp);
+
+    int Ncount=0;
+
     while (!Nullflag &&
            ((options.gline = getline(&(options.strStr), &sizeStr, fp)) != -1) &&
            !options.lflag) {
-      regcomp(&regex, options.strSearch, registflag);
-      options.regFound = regexec(&regex, options.strStr, 0, NULL, 0);
-      if (options.oflag) {
+            Ncount+=1;
+            if (options.nflag){
+              while(Ncount=>1){
+                putchar(
+              }
+            }
+            printf("%d",Ncount);
+           // printf("%s",options.strBuf );
+      int success = 0;
 
-      } else {
-        if ((options.regFound == 0)) {
-          printf("%s", options.strStr);
+      regcomp(&regex, options.strSearch, registflag);
+      options.regFound = regexec(&regex, options.strStr, 1, pmatch, 0);
+      if (options.oflag) {
+           int line_pos = 0;
+        int length = strlen(options.strStr);
+        while (regexec(&regex, options.strStr + line_pos, 1, pmatch, 0) == 0) {
+          int k = strlen(options.strBuf);
+          for (int i = pmatch->rm_so; i < pmatch->rm_eo; i++) {
+            options.strBuf[k] = options.strStr[i];
+            k++;
+          }
+          (options.strBuf)[strlen(options.strBuf)] = '\n';
+          line_pos = line_pos + pmatch->rm_eo+1;
+          if (line_pos > length) {
+            break;
+          }
+        }
+      }
+      if (options.vflag) {
+        success = REG_NOMATCH;
+      }
+      if ((options.regFound == success) && !options.oflag) {
+        int k = strlen(options.strBuf);
+        for (size_t i = 0; i < strlen(options.strStr); i++) {
+          options.strBuf[k] = options.strStr[i];
+          k++;
         }
       }
     }
@@ -58,7 +93,13 @@ int main(int argc, char **argv) {
       fclose(fp);
     }
     find++;
+
+     if (options.vflag) {
+    (options.strBuf)[strlen(options.strBuf)] = '\n';
   }
+  printf("%s", options.strBuf); 
+  }
+  //(options.strBuf)[strlen(options.strBuf)]='\n';
   regfree(&regex);
   free_at_exit(&options);
   return flag;
@@ -68,7 +109,7 @@ void pars_and_prework(opt *options) {
   int opchar = 0;
   int opindex = 0;
   while (-1 != (opchar = getopt_long(options->argc, options->argv,
-                                     "+e:ivclnhsf:o", opts, &opindex))) {
+                                     "e:ivclnhsf:o", opts, &opindex))) {
     switchcase(&opchar, options);
   }
 }
@@ -103,7 +144,6 @@ void if_E_or_F(opt options, char *strPattern, char *strSearch) {
 
 void Ecase(char *strPattern, char *str) {
   int length = strlen(str);
-  // printf("strSearch:%s\n",str);
   if (strlen(str) > 0) {
     if ((length == 1) && (str[length - 1] == '*')) {
       strcpy(str, " *");
