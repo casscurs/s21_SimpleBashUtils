@@ -21,6 +21,7 @@ void free_at_exit(opt *options) {
 }
 
 int main(int argc, char **argv) {
+  char strBuf[1024] = {0};
   int flag = 0;
   opt options = {0};
   size_t sizeStr = 1024;
@@ -31,76 +32,90 @@ int main(int argc, char **argv) {
   pars_and_prework(&options);
   argc_check(&options);
   last_sym_rewrite(options.strPattern);
-
+//printf("\n%d\n",argc);
   int find = optind;
   regex_t regex;
   regmatch_t pmatch[1];
   int registflag = REG_NEWLINE | REG_EXTENDED;
-
+//   int FilenameFlag=0;
+// if ((argc-options.EFcount) >= 4){
+//   FilenameFlag=1;
+// }
   decrement_for_EF(&find, options);
+  strcat(options.strSearch, argv[find]);
+   if_E_or_F(options, options.strPattern, options.strSearch);
   while (find < (argc)) {
     int Nullflag = 0;
     FILE *fp = NULL;
-    strcat(options.strSearch, argv[find]);
-    if_E_or_F(options, options.strPattern, options.strSearch);
     File_range(options, &Nullflag, find, &fp);
 
-    int Ncount=0;
+    int Ncount = 0;
 
     while (!Nullflag &&
-           ((options.gline = getline(&(options.strStr), &sizeStr, fp)) != -1) &&
-           !options.lflag) {
-            Ncount+=1;
-            if (options.nflag){
-              while(Ncount=>1){
-                putchar(
-              }
-            }
-            printf("%d",Ncount);
-           // printf("%s",options.strBuf );
+           ((options.gline = getline(&(options.strStr), &sizeStr, fp)) != -1)) {
+      memset(strBuf, 0, 1024);
+      int len = strlen((options.strStr));
+      if ((options.strStr)[len - 1] != '\n') {
+        strcat((options.strStr), "\n");
+      }
+      Ncount += 1;
       int success = 0;
 
       regcomp(&regex, options.strSearch, registflag);
-      options.regFound = regexec(&regex, options.strStr, 1, pmatch, 0);
+
+    //  options.regFound = regexec(&regex, options.strStr, 1, pmatch, 0);
+
       if (options.oflag) {
-           int line_pos = 0;
+        int line_pos = 0;
         int length = strlen(options.strStr);
-        while (regexec(&regex, options.strStr + line_pos, 1, pmatch, 0) == 0) {
-          int k = strlen(options.strBuf);
+      
+        while (regexec(&regex, options.strStr+line_pos, 1, pmatch, 0) == 0) {
+          int k = strlen(strBuf);
           for (int i = pmatch->rm_so; i < pmatch->rm_eo; i++) {
-            options.strBuf[k] = options.strStr[i];
+            strBuf[k] = (options.strStr+line_pos)[i];
             k++;
           }
-          (options.strBuf)[strlen(options.strBuf)] = '\n';
-          line_pos = line_pos + pmatch->rm_eo+1;
+          strBuf[strlen(strBuf)] = '\n';
+          //  printf("%.*s\n", (int)(pmatch->rm_eo - pmatch->rm_so),
+          //     options.strStr + pmatch->rm_so);
+              
+          line_pos = line_pos + pmatch->rm_eo;
+          if (pmatch->rm_eo==pmatch->rm_so)
+          line_pos++;
           if (line_pos > length) {
             break;
           }
         }
-      }
-      if (options.vflag) {
-        success = REG_NOMATCH;
-      }
-      if ((options.regFound == success) && !options.oflag) {
-        int k = strlen(options.strBuf);
-        for (size_t i = 0; i < strlen(options.strStr); i++) {
-          options.strBuf[k] = options.strStr[i];
-          k++;
+      } else {
+        if (options.vflag) {
+          success = REG_NOMATCH;
+        }
+        if ((options.regFound == success) && !options.oflag) {
+          // if (FilenameFlag) {
+          //   sprintf(strBuf, "%s:", argv[find+1]);
+          // }
+          if (options.nflag) {
+            sprintf(strBuf, "%d:", Ncount);
+          }
+          strcat(strBuf, options.strStr);
         }
       }
+      regfree(&regex);
+      // if (options.lflag && (options.regFound == success)) {
+      //   strcpy(strBuf, (options.argv)[1 + find]);
+      //   strcat(strBuf, "\n");
+      //   printf("%s", strBuf);
+      //   break;
+      // } else {
+         printf("%s", strBuf);
+      // }
     }
     if (fp != NULL) {
       fclose(fp);
     }
+    // printf("%s\n",argv[find+1]);
     find++;
-
-     if (options.vflag) {
-    (options.strBuf)[strlen(options.strBuf)] = '\n';
   }
-  printf("%s", options.strBuf); 
-  }
-  //(options.strBuf)[strlen(options.strBuf)]='\n';
-  regfree(&regex);
   free_at_exit(&options);
   return flag;
 }
@@ -219,6 +234,7 @@ void switchcase(int *opchar, opt *options) {
   switch (*opchar) {
   case 'e':
     options->eflag = 1;
+    options->EFcount++;
     Ecase(options->strPattern, optarg);
     break;
   case 'i':
@@ -244,6 +260,7 @@ void switchcase(int *opchar, opt *options) {
     break;
   case 'f':
     options->fflag = 1;
+    options->EFcount++;
     Fcase(options);
     break;
   case 'o':
@@ -306,3 +323,4 @@ void switchcase(int *opchar, opt *options) {
 //   }
 //   printf("%d\n", success);
 // }
+
