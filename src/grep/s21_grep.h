@@ -29,6 +29,8 @@ typedef struct options {
   int CFlagcount;
   int C;
 
+  int Argcount;
+
   char strSearch[sizeSearch];
   char strPattern[sizeSearch];
   char strBuf[sizeBuf];
