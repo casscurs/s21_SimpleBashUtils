@@ -2,6 +2,117 @@
 
 // valgrind
 // cppcheck
+
+int main(int argc, char **argv) {
+
+  int flag = 0;
+  opt options = {0};
+  size_t sizeStr = 1024;
+  options.argc = argc;
+  options.argv = argv;
+  options.strStr = (char *)malloc(sizeStr * sizeof options.strStr);
+  malloc_check(options.strStr, &options);
+  pars_and_prework(&options);
+  argc_check(&options);
+  last_sym_rewrite(options.strPattern);
+  int find = optind;
+  regex_t regex;
+  regmatch_t pmatch[1];
+  int registflag = REG_NEWLINE | REG_EXTENDED;
+  if (!options.hflag){
+  Filename(&options,optind);
+  }
+  decrement_for_EF(&find, options);
+  strcat(options.strSearch, argv[find]);
+  if_E_or_F(options, options.strPattern, options.strSearch);
+  while (find < (argc)) {
+    int Nullflag = 0;
+    FILE *fp = NULL;
+    File_range(options, &Nullflag, find, &fp);
+    options.CFlagcount=0;
+
+
+    while (!Nullflag &&
+           ((options.gline = getline(&(options.strStr), &sizeStr, fp)) != -1)) {
+      memset(options.strBuf, 0, 1024);
+      FileString_format(&options);
+      options.Ncount += 1;
+      int success = 0;
+      if (options.iflag){
+        registflag = REG_NEWLINE | REG_EXTENDED | REG_ICASE;
+      }
+      Vflag(&options,&success);
+      regcomp(&regex, options.strSearch, registflag);
+      if (options.oflag) { //---o
+        int line_pos = 0;
+        int length = strlen(options.strStr);
+
+        while (regexec(&regex, options.strStr + line_pos, 1, pmatch, 0) ==
+               success) {
+          N_Fname_comb(&options,find);
+          options.CFlagcount++;
+
+          int k = strlen(options.strBuf);
+          for (int i = pmatch->rm_so; i < pmatch->rm_eo; i++) {
+            (options.strBuf)[k] = (options.strStr + line_pos)[i];
+            k++;
+          }
+          (options.strBuf)[strlen(options.strBuf)] = '\n';
+          line_pos = line_pos + pmatch->rm_eo;
+          if (pmatch->rm_eo == pmatch->rm_so)
+            line_pos++;
+          if (line_pos > length) {
+            break;
+          }
+        }
+      }
+      else {
+        options.regFound = regexec(&regex, options.strStr, 1, pmatch, 0);
+        if ((options.regFound == success)) {
+options.CFlagcount++;
+           N_Fname_comb(&options,find);
+          strcat(options.strBuf, options.strStr);
+        }
+      }
+        if (!options.cflag && !options.lflag && (options.regFound == success)){
+          printf("%s", options.strBuf);
+        }
+       regfree(&regex);
+    }
+      if (options.cflag && !options.C) {
+        if ((find+1) < argc){
+          if (options.FilenameFlag) {
+            sprintf(options.strBuf, "%s:%d", (options.argv)[find+1],options.CFlagcount);
+          } else{
+            sprintf(options.strBuf, "%d",options.CFlagcount);
+          }
+        printf("%s\n", options.strBuf);
+        }
+      }
+
+      if (options.lflag && options.CFlagcount > 0) {
+        strcpy(options.strBuf, (options.argv)[1 + find]);
+        strcat(options.strBuf, "\n");
+        printf("%s", options.strBuf);
+      }
+    options.Ncount=0;
+    if (fp != NULL) {
+      fclose(fp);
+    }
+    find++;
+  }
+  free_at_exit(&options);
+  return flag;
+}
+
+
+
+
+
+
+
+
+
 void File_range(opt options, int *Nullflag, int find, FILE **fp) {
   if ((find + 1) >= (options.argc)) {
     *Nullflag = 1;
@@ -19,105 +130,39 @@ void free_at_exit(opt *options) {
     options->strFile = NULL;
   }
 }
-
-int main(int argc, char **argv) {
-  char strBuf[1024] = {0};
-  int flag = 0;
-  opt options = {0};
-  size_t sizeStr = 1024;
-  options.argc = argc;
-  options.argv = argv;
-  options.strStr = (char *)malloc(sizeStr * sizeof options.strStr);
-  malloc_check(options.strStr, &options);
-  pars_and_prework(&options);
-  argc_check(&options);
-  last_sym_rewrite(options.strPattern);
-//printf("\n%d\n",argc);
-  int find = optind;
-  regex_t regex;
-  regmatch_t pmatch[1];
-  int registflag = REG_NEWLINE | REG_EXTENDED;
-//   int FilenameFlag=0;
-// if ((argc-options.EFcount) >= 4){
-//   FilenameFlag=1;
-// }
-  decrement_for_EF(&find, options);
-  strcat(options.strSearch, argv[find]);
-   if_E_or_F(options, options.strPattern, options.strSearch);
-  while (find < (argc)) {
-    int Nullflag = 0;
-    FILE *fp = NULL;
-    File_range(options, &Nullflag, find, &fp);
-
-    int Ncount = 0;
-
-    while (!Nullflag &&
-           ((options.gline = getline(&(options.strStr), &sizeStr, fp)) != -1)) {
-      memset(strBuf, 0, 1024);
-      int len = strlen((options.strStr));
-      if ((options.strStr)[len - 1] != '\n') {
-        strcat((options.strStr), "\n");
-      }
-      Ncount += 1;
-      int success = 0;
-
-      regcomp(&regex, options.strSearch, registflag);
-
-    //  options.regFound = regexec(&regex, options.strStr, 1, pmatch, 0);
-
-      if (options.oflag) {
-        int line_pos = 0;
-        int length = strlen(options.strStr);
-      
-        while (regexec(&regex, options.strStr+line_pos, 1, pmatch, 0) == 0) {
-          int k = strlen(strBuf);
-          for (int i = pmatch->rm_so; i < pmatch->rm_eo; i++) {
-            strBuf[k] = (options.strStr+line_pos)[i];
-            k++;
+void N_Fname_comb(opt *options,int find){
+            if (options->FilenameFlag && options->nflag) {
+            sprintf(options->strBuf, "%s:%d:", (options->argv)[find+1],options->Ncount);
+          }  else{
+            if (options->FilenameFlag && !options->nflag) {
+            sprintf(options->strBuf, "%s:", (options->argv)[find+1]);
+          } else {
+                        if (!(options->FilenameFlag) && options->nflag) {
+            sprintf(options->strBuf, "%d:", options->Ncount);
           }
-          strBuf[strlen(strBuf)] = '\n';
-          //  printf("%.*s\n", (int)(pmatch->rm_eo - pmatch->rm_so),
-          //     options.strStr + pmatch->rm_so);
-              
-          line_pos = line_pos + pmatch->rm_eo;
-          if (pmatch->rm_eo==pmatch->rm_so)
-          line_pos++;
-          if (line_pos > length) {
-            break;
           }
-        }
-      } else {
-        if (options.vflag) {
-          success = REG_NOMATCH;
-        }
-        if ((options.regFound == success) && !options.oflag) {
-          // if (FilenameFlag) {
-          //   sprintf(strBuf, "%s:", argv[find+1]);
-          // }
-          if (options.nflag) {
-            sprintf(strBuf, "%d:", Ncount);
           }
-          strcat(strBuf, options.strStr);
-        }
-      }
-      regfree(&regex);
-      // if (options.lflag && (options.regFound == success)) {
-      //   strcpy(strBuf, (options.argv)[1 + find]);
-      //   strcat(strBuf, "\n");
-      //   printf("%s", strBuf);
-      //   break;
-      // } else {
-         printf("%s", strBuf);
-      // }
-    }
-    if (fp != NULL) {
-      fclose(fp);
-    }
-    // printf("%s\n",argv[find+1]);
-    find++;
+}
+void Filename(opt *options,int nefl){
+  if ((options->eflag || options->fflag)&& (options->argc-nefl>=2)){
+    options->FilenameFlag=1;
   }
-  free_at_exit(&options);
-  return flag;
+    else {
+    if ((options->argc-nefl!=2)){
+    options->FilenameFlag=1;
+  }
+  }
+}
+void FileString_format(opt *options){
+  int len = strlen((options->strStr));
+      if ((options->strStr)[len - 1] != '\n') {
+        strcat((options->strStr), "\n");
+      }
+}
+void Vflag(opt *options,int* success){
+      if (options->vflag) {
+          *success = REG_NOMATCH;
+        }
 }
 
 void pars_and_prework(opt *options) {
@@ -234,7 +279,6 @@ void switchcase(int *opchar, opt *options) {
   switch (*opchar) {
   case 'e':
     options->eflag = 1;
-    options->EFcount++;
     Ecase(options->strPattern, optarg);
     break;
   case 'i':
@@ -260,7 +304,6 @@ void switchcase(int *opchar, opt *options) {
     break;
   case 'f':
     options->fflag = 1;
-    options->EFcount++;
     Fcase(options);
     break;
   case 'o':
@@ -270,57 +313,5 @@ void switchcase(int *opchar, opt *options) {
     printf("usage: grep [-benstuv] [file ...]\n");
   }
 }
-//  countStr++;
-//       printf("%s",strPattern);
-//       regcomp(&regex, strStr, registflag);
 
-//       if ((argc-optind)>1){
-//         fnameflag=1;
-//       }
-//       if(options.hflag){
-//       fnameflag=0;
-//     }
-//       if (options.iflag) {
-//         registflag = REG_EXTENDED | REG_ICASE;
-//       }
-//       if (options.vflag) {
-//         opposflag =0;
-//       }
-//       regFound = regexec(&regex, strStr, 0, NULL, registflag);
-//       if (regFound == opposflag){
-//         success++;
-//       }
-//       if ((regFound == opposflag) && options.lflag) {//печать только имени
-//       файла
-//         printf("%s", argv[currfile]);
-//       }
-//       if ((regFound == opposflag) && fnameflag && !options.lflag &&
-//       !options.cflag && !options.oflag) {//печать с именем файла
-//         printf("%s:", argv[currfile]);
-//         if (options.nflag) {
-//           printf("%d:", countStr);
-//         }
-//         printf("%s", strStr);
-//       }
-//       if ((regFound == opposflag) && !fnameflag && !options.lflag &&
-//       !options.cflag && !options.oflag) {//печать без имени файла
-//         if (options.nflag) {
-//           printf("%d:", countStr);
-//         }
-//         printf("%s", strStr);
-//       }
-//       if (options.oflag){ //печать под -o flag
-//         for(int i=0;strStr[i] != '\0';i++){
-//           if(strspn(&strStr[i],strSearch) >=1){
-//             putchar(strStr[i]);
-//             putchar('\n');
-//           }
-//         }
-//       }
-// if(options.cflag && !Nullflag){// печать успешных
-//   if(fnameflag){
-//     printf("%s:", argv[currfile]);
-//   }
-//   printf("%d\n", success);
-// }
 

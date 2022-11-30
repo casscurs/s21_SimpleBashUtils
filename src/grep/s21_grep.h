@@ -9,6 +9,7 @@
 #include <unistd.h>
 
 #define sizeSearch 4096
+#define sizeBuf 1024
 
 typedef struct options {
   int eflag;
@@ -21,13 +22,16 @@ typedef struct options {
   int sflag;
   int fflag;
   int oflag;
-  
+  int FilenameFlag;
   char *strStr;
   char *strFile;
+  int Ncount;
+  int CFlagcount;
+  int C;
 
   char strSearch[sizeSearch];
-  char strBuf[sizeSearch];
   char strPattern[sizeSearch];
+  char strBuf[sizeBuf];
   int argc;
   char **argv;
   int gline;
@@ -48,6 +52,14 @@ struct option opts[] = {
     {"only-matching", no_argument, 0, 'o'},
     {0, 0, 0, 0},
 };
+void File_range(opt options, int *Nullflag, int find, FILE **fp);
+void free_at_exit(opt *options);
+void N_Fname_comb(opt *options,int find);
+void Filename(opt *options,int nefl);
+void FileString_format(opt *options);
+void Vflag(opt *options,int* success);
+
+
 
 void argc_check(opt *options);
 void pars_and_prework(opt *options);
