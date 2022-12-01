@@ -1,16 +1,14 @@
 #ifndef S21_GREP_H
 #define S21_GREP_H
-
 #include <getopt.h>
 #include <regex.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-
 #define sizeSearch 4096
 #define sizeBuf 1024
-
+#define sizeInf 512
 typedef struct options {
   int eflag;
   int iflag;
@@ -22,25 +20,25 @@ typedef struct options {
   int sflag;
   int fflag;
   int oflag;
+  int nefl;
+  int success;
   int FilenameFlag;
-  char *strStr;
-  char *strFile;
+  int registflag;
+  int NcountPrev;
   int Ncount;
   int CFlagcount;
   int C;
-
-  int Argcount;
-
+  int gline;
+  int regFound;
+  int argc;
+  char *strStr;
+  char *strFile;
   char strSearch[sizeSearch];
   char strPattern[sizeSearch];
   char strBuf[sizeBuf];
-  int argc;
+  char strInf[sizeInf];
   char **argv;
-  int gline;
-  int regFound;
-  //добавить основные переменные
 } opt;
-
 struct option opts[] = {
     {"regexp", no_argument, 0, 'e'},
     {"ignore-case", no_argument, 0, 'i'},
@@ -57,12 +55,17 @@ struct option opts[] = {
 void File_range(opt options, int *Nullflag, int find, FILE **fp);
 void free_at_exit(opt *options);
 void N_Fname_comb(opt *options,int find);
-void Filename(opt *options,int nefl);
+void Filename(opt *options);
 void FileString_format(opt *options);
-void Vflag(opt *options,int* success);
-
-
-
+void Vflag(opt *options);
+void broadPrint(opt *options);
+void CloseFile(FILE *fp);
+void NeedName(opt *options);
+void oFlagBody(opt *options,regex_t *regex,regmatch_t pmatch[1],int find);
+void broadFunctionalPart(opt *options,regex_t *regex,regmatch_t pmatch[1],int find);
+void iFlagbody(opt *options);
+void cFlagbody(opt *options,int find);
+void lFlagbody(opt *options,int find);
 void argc_check(opt *options);
 void pars_and_prework(opt *options);
 void file_check(char *str, int *Nullflag, FILE **fp);
@@ -74,5 +77,4 @@ void Ecase(char* strPattern,char* str);
 void Fcase(opt *options);
 void switchcase(int *opchar, opt *options);
 void file_check_exit(char *str, int *Nullflag, FILE **fp,opt *options);
-
 #endif
