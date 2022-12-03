@@ -8,7 +8,7 @@ int main(int argc, char **argv) {
     int currfile = optind;
     mainwork(argc, argv, &currfile, options);
   } else {
-    printf("no arguments");
+    fprintf(stderr, "no arguments");
     flag = 1;
   }
   return flag;
@@ -22,7 +22,7 @@ void mainwork(int argc, char **argv, int *currfile, opt options) {
     fp = fopen(argv[*currfile], "r");
     int i = 1;
     if (fp == NULL) {
-      printf("\ncat: %s: No such file\n", argv[*currfile]);
+      fprintf(stderr, "cat: %s: No such file or directory\n", argv[*currfile]);
       (*currfile)++;
       continue;
     } else {
