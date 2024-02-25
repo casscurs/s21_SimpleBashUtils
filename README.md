@@ -1,14 +1,12 @@
-# Simple Bash Utils
+# Simple Bash Utilities
 
 Development of Bash text utilities: cat, grep.
 
 ## Chapter I
 
-## Information
-
 ### cat Usage
 
-Cat is one of the most frequently used commands on Unix-like operating systems. It has three related functions with regard to text files: displaying them, combining copies of them and creating new ones.
+Cat is a frequently used command on Unix-like operating systems for displaying, combining, and creating text files.
 
 `cat [OPTION] [FILE]...`
 
@@ -16,11 +14,11 @@ Cat is one of the most frequently used commands on Unix-like operating systems. 
 
 | No. | Options | Description |
 | ------ | ------ | ------ |
-| 1 | -b (GNU: --number-nonblank) | numbers only non-empty lines |
-| 2 | -e implies -v (GNU only: -E the same, but without implying -v) | but also display end-of-line characters as $  |
-| 3 | -n (GNU: --number) | number all output lines |
-| 4 | -s (GNU: --squeeze-blank) | squeeze multiple adjacent blank lines |
-| 5 | -t implies -v (GNU: -T the same, but without implying -v) | but also display tabs as ^I  |
+| 1 | -b | number only non-empty lines |
+| 2 | -e | display end-of-line characters as $ as well |
+| 3 | -n | number all output lines |
+| 4 | -s | squeeze multiple adjacent blank lines |
+| 5 | -t | display tabs as ^I as well |
 
 ### grep Usage
 
@@ -31,61 +29,49 @@ Cat is one of the most frequently used commands on Unix-like operating systems. 
 | No. | Options | Description |
 | ------ | ------ | ------ |
 | 1 | -e | pattern |
-| 2 | -i | Ignore uppercase vs. lowercase.  |
+| 2 | -i | Ignore case distinctions in both the template and input files. |
 | 3 | -v | Invert match. |
 | 4 | -c | Output count of matching lines only. |
-| 5 | -l | Output matching files only.  |
-| 6 | -n | Precede each matching line with a line number. |
-| 7 | -h | Output matching lines without preceding them by file names. |
+| 5 | -l | Output only the names of files with matching lines. |
+| 6 | -n | Precede each matching line with its corresponding line number. |
+| 7 | -h | Suppress the prefixing of file names on output. |
 | 8 | -s | Suppress error messages about nonexistent or unreadable files. |
-| 9 | -f file | Take regexes from a file. |
-| 10 | -o | Output the matched parts of a matching line. |
-
+| 9 | -f file | Obtain patterns from file, one per line. |
+| 10 | -o | Output only the matched parts of a matching line. |
 
 ## Chapter II
 
-- The programs must be developed in C language of C11 standard using gcc compiler.
-- The program code of the cat and grep must be located on the develop branch in the src/cat/ and src/grep/ folders, respectively  
-- Do not use outdated and legacy language constructions and library functions. Pay attention to the legacy and obsolete marks in the official documentation on the language and the libraries used. Use the POSIX.1-2017 standard.
-- When writing code it is necessary to follow the Google style
-- The programs must be executable files with command line arguments
-- The programs must be built with Makefile with appropriate targets: s21_cat, s21_grep
-- If third-party libraries are used, there must be build scripts in makefile to connect/load them
-- Integration tests must cover all flag variants and input values, based on a comparison with the behavior of real Bash utilities 
-- The programs must be developed according to the principles of structured programming
-- Code duplication must be avoided, common modules must be reused between the utilities. Common modules can be moved to a separate folder src/common
-- You can use standard and non-standard C libraries, or you can use your own developed libraries from other projects
-- The statement of the message in the case of an error does not matter
-- Input via stdin is not required to be supported
+- Develop cat and grep utilities in C language following POSIX.1-2017 standard.
+- Ensure adherence to Google style guide.
+- Build utilities using Makefile with targets: s21_cat, s21_grep.
+- Integration tests should cover all flag variants for consistency with real Bash utilities.
+- Minimize code duplication; reuse common modules between utilities.
+- Standard or non-standard C libraries can be used.
+- Support for input via stdin is not required.
 
-## Part 1. Working with the cat utility
+### Part 1. Development of cat utility
 
-You need to develop a cat utility:
-- Support of all flags (including GNU versions) specified [above](#cat-options)
-- The source, header, and build files must be placed in the src/cat/ directory
-- The resulting executable file must be placed in the directory src/cat/ and named s21_cat
+- Support all flags specified above.
+- Place files in src/cat/ directory.
+- Name resulting executable file s21_cat.
 
-## Part 2. Working with grep utility
+### Part 2. Development of grep utility
 
-You need to develop the grep utility:
-- Support of the following flags: `-e`, `-i`, `-v`, `-c`, `-l`, `-n`
-- Only pcre or regex libraries can be used for regular expressions
-- The source, header and make files must be placed in the src/grep/ directory
-- The resulting executable file must be placed in the directory src/grep/ and named s21_grep
+- Support specified flags.
+- Use pcre or regex libraries for regular expressions.
+- Place files in src/grep/ directory.
+- Name resulting executable file s21_grep.
 
-## Part 3. Bonus. Implementation of some grep utility flags
+### Part 3. Bonus. Extended Implementation of grep utility flags
 
-Bonus assignment for extra points. You need to develop the grep utility:
-- Support of all flags, including: `-h`, `-s`, `-f`, `-o`
-- Only pcre or regex libraries can be used for regular expressions
-- The source, header and make files must be placed in the src/grep/ directory
-- The resulting executable file must be placed in the directory src/grep/ and named s21_grep
+- Enhance grep utility to support all flags.
+- Use pcre or regex libraries for regular expressions.
+- Place files in src/grep/ directory.
+- Name resulting executable file s21_grep.
 
-## Part 4. Bonus. Implementation of grep utility flag combinations
+### Part 4. Bonus. Implementation of grep utility flag combinations
 
-Bonus assignment for extra points. You need to develop the grep utility:
-- Support of all flags, including their _pair_ combinations (e.g. `-iv`, `-in`)
-- Only pcre or regex libraries can be used for regular expressions
-- The source, header and make files must be placed in the src/grep/ directory
-- The resulting executable file must be placed in the directory src/grep/ and named s21_grep
-
+- Expand grep utility to support all flags, including combined forms.
+- Use pcre or regex libraries for regular expressions.
+- Place files in src/grep/ directory.
+- Name resulting executable file s21_grep.
